@@ -23,5 +23,6 @@ uint8_t can_pollInterrupt(void);
 void can_print(can_message msg);
 
 void can_handle_joystick_message(can_message msg);
-void can_handle_score_message(can_message msg);
-void can_handle_slider_message(can_message msg);
+void can_handle_solenoid_message(can_message msg);
+void can_handle_slider_message(can_message msg, int max_encoder_value);
+void can_handle_message(can_message msg, int max_encoder_value);

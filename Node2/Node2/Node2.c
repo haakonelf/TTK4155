@@ -24,7 +24,6 @@
 #include "adc.h"
 #include "motor_driver.h"
 #include "dac.h"
-#include "motor_controller.h"
 #include "pid.h"
 
 float max_encoder_value;
@@ -45,39 +44,22 @@ int main(void)
 	printf("Motor setup done\n");
 	dac_initialize(0b111);
 	printf("DAC setup done\n");
+	pid_init(-0.5, -0.5, -0.0);
 	printf("Initialization done\n");
 	
 	DDRA |=(1<<PA2); //for solenoid
-	//Joystick joy;
 	can_message msg = {0};
 	game_score score = new_score(0, 0, 0, 0);
-	max_encoder_value = controller_init();
-	
-	printf("max_encoder_value: %.3f\n", max_encoder_value);
-	
-	
-	pid_init(-1, -2, -0.0);
-	
-	
-	//motor_speed(100);
+	int max_encoder_value = pid_find_max_encoder_value();
+	//printf("Max encoder value: %d\n", max_encoder_value);
+	motor_speed(100);
 	while(1)
 	{
 		if(can_pollInterrupt()){
 			msg = can_read();
 		}
 		
-		//Kanskje bruke en switch
-		can_handle_joystick_message(msg);
-		can_handle_score_message(msg);
-		can_handle_slider_message(msg); //FJERN GLOBAL VARIABEL
-
-
-		
-
-		
-		//printf("Speed: %d\n", speed);
-		//motor_speed(speed);
-		
+		can_handle_message(msg, max_encoder_value);
 		_delay_ms(10);
 	}
 	

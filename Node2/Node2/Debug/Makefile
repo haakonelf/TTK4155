@@ -43,7 +43,6 @@ C_SRCS +=  \
 ../game.c \
 ../joy.c \
 ../mcp.c \
-../motor_controller.c \
 ../motor_driver.c \
 ../Node2.c \
 ../pid.c \
@@ -66,7 +65,6 @@ dac.o \
 game.o \
 joy.o \
 mcp.o \
-motor_controller.o \
 motor_driver.o \
 Node2.o \
 pid.o \
@@ -82,7 +80,6 @@ dac.o \
 game.o \
 joy.o \
 mcp.o \
-motor_controller.o \
 motor_driver.o \
 Node2.o \
 pid.o \
@@ -98,7 +95,6 @@ dac.d \
 game.d \
 joy.d \
 mcp.d \
-motor_controller.d \
 motor_driver.d \
 Node2.d \
 pid.d \
@@ -114,7 +110,6 @@ dac.d \
 game.d \
 joy.d \
 mcp.d \
-motor_controller.d \
 motor_driver.d \
 Node2.d \
 pid.d \
@@ -137,8 +132,6 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
-
-
 
 
 

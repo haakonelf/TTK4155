@@ -16,19 +16,13 @@ void can_init(){
 	mcp_bitModify(MCP_RXB1CTRL, MCP_RXBCTRL_MASK, 0xff);
 	mcp_bitModify(MCP_CANINTE, 0x3, 0x3);
 	
-	mcp_bitModify(MCP_CANCTRL, MCP_CANCTRL_MASK, MCP_NORMAL_MODE);
-	
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+	mcp_bitModify(MCP_CANCTRL, MCP_CANCTRL_MASK, MCP_NORMAL_MODE);	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 }
 
 can_message can_read(void){
 	can_message msg;
 	uint8_t bufferSelect = can_pollInterrupt();
-	/*
-	if(!bufferSelect){
-		printf("No interrupt detected!");
-	}
-	*/
+	
 	msg.id = (mcp_read(bufferSelect + MCP_RXSIDH_OFFSET) << 3) | (mcp_read(bufferSelect + MCP_RXSIDL_OFFSET) >> 5);
 	msg.length = mcp_read(bufferSelect + MCP_RXBDLC_OFFSET) & MCP_RXBDLC_MASK;
 	
@@ -36,6 +30,7 @@ can_message can_read(void){
 		msg.data[i] = mcp_read(bufferSelect + MCP_RXB_OFFSET + i);
 	}
 	
+	//Clear interrupt flag
 	mcp_bitModify(MCP_CANINTF, MCP_RX0IF, 0);
 	return msg;
 }
@@ -95,51 +90,40 @@ void can_print(can_message msg){
 }
 
 void can_handle_joystick_message(can_message msg){
-	if(msg.id == MCP_JOYSTICK_MESSAGE){
-		pwm_set_servo(msg.data[0]);
-	}
+	pwm_set_servo(msg.data[0]);
 }
-void can_handle_score_message(can_message msg){
-	if(msg.id == MCP_BUTTON_PRESS){
-		if(msg.data[0]){
-			PORTA |= (1<<PA2); //stop relay
-		}
-		else{
-			PORTA &= ~(1<<PA2); //activate relay
-		}
+void can_handle_solenoid_message(can_message msg){
+	if(msg.data[0]){
+		PORTA |= (1<<PA2); //stop relay
+	}
+	else{
+		PORTA &= ~(1<<PA2); //activate relay
 	}
 }
 
-extern float max_encoder_value;
-
-void can_handle_slider_message(can_message msg){
-	if(msg.id == MCP_SLIDER_MESSAGE){
-		printf("In can: %d\n", msg.data[0]);
-		uint8_t slider_value = msg.data[0];
-		float r = (255 - slider_value)*(max_encoder_value/255.0);
-		//r = max_encoder_value / 2;
-		float y = motor_encoder_read();
-		float u = pid_generate(r, y, 0.01) / ((max_encoder_value+1)/255);
-				
-		//printf("r: %.3f   ", r);
-		//printf("y: %.3f   ", y);
-		//printf("u: %.3f\n", u);
-				
-		motor_speed(u);
-	}
-}
-		/*int16_t speed = msg.data[0];
-		//printf("Speed: %d\n", speed);
-		printf("Speed: %d\n", speed);
-		speed -= 127;
+void can_handle_slider_message(can_message msg, int max_encoder_value){
+	uint8_t slider_value = msg.data[0];
 		
-		if(speed > 0){
-			//printf("Speed: %d\n", speed);
-			motor_direction(right);
-			motor_speed(speed);
-		}
-		else{
-			//printf("Speed: %d\n", speed);
-			motor_direction(left);
-			motor_speed(abs(speed));
-		}*/
+	float r = (255 - slider_value)*(max_encoder_value/255.0);
+	float y = motor_encoder_read();
+	float u = pid_generate(r, y, 0.01) / ((max_encoder_value+1)/255);
+				
+	motor_speed(u);
+}
+
+void can_handle_message(can_message msg, int max_encoder_value){
+	switch(msg.id){
+		case MCP_JOYSTICK_MESSAGE:
+			can_handle_joystick_message(msg);
+			break;
+		
+		case MCP_SOLENOID_MESSAGE:
+			can_handle_solenoid_message(msg);
+			break;
+			
+		case MCP_SLIDER_MESSAGE:
+			can_handle_slider_message(msg, max_encoder_value);
+			break;
+
+	}
+}

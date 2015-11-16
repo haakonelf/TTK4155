@@ -1,4 +1,6 @@
-
+#include "motor_driver.h"
+#include <util/delay.h>
+#include <stdint.h>
 
 float kp;
 float ki;
@@ -16,7 +18,7 @@ void pid_init(float _kp, float _ki, float _kd){
 	reference	= 0;
 	integral	= 0;
 	prev_error	= 0;
-	
+
 }
 
 
@@ -29,4 +31,33 @@ float pid_generate(float r, float y, float dt){
 	prev_error = error;
 	
 	return kp*error + ki*integral + kd*derivative;
+}
+
+uint16_t pid_find_max_encoder_value(void){
+		motor_speed(75);
+		uint16_t enc_val = 0, prev_enc_val = -1;
+		
+		printf("Values: %d %d\n", enc_val, prev_enc_val);
+		//Stop at left end
+		while(enc_val != prev_enc_val){
+			printf("In while\n");
+			enc_val = motor_encoder_read();
+			prev_enc_val = motor_encoder_read();
+		}
+		printf("Out of while\n");
+		motor_speed(0);
+		motor_encoder_reset();
+		
+		//Stop at right end and set max
+		motor_speed(-75);
+		enc_val = 0, prev_enc_val = -1;
+		while(enc_val != prev_enc_val){
+			enc_val = motor_encoder_read();
+			_delay_ms(100);
+			prev_enc_val = motor_encoder_read();
+		}
+		motor_speed(0);
+		
+		//Max value of encoder.
+		return enc_val;
 }

@@ -14,8 +14,6 @@ joy.c
 
 mcp.c
 
-motor_controller.c
-
 motor_driver.c
 
 Node2.c
