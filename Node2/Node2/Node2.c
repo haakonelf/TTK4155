@@ -44,7 +44,7 @@ int main(void)
 	printf("Motor setup done\n");
 	dac_initialize(0b111);
 	printf("DAC setup done\n");
-	pid_init(-0.5, -0.5, -0.0);
+	pid_init(-1.0, -2.0, -0.0);
 	printf("Initialization done\n");
 	
 	DDRA |=(1<<PA2); //for solenoid

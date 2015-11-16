@@ -34,14 +34,14 @@ float pid_generate(float r, float y, float dt){
 }
 
 uint16_t pid_find_max_encoder_value(void){
-		motor_speed(75);
 		uint16_t enc_val = 0, prev_enc_val = -1;
+		motor_speed(75);
 		
-		printf("Values: %d %d\n", enc_val, prev_enc_val);
 		//Stop at left end
 		while(enc_val != prev_enc_val){
 			printf("In while\n");
 			enc_val = motor_encoder_read();
+			_delay_ms(100);
 			prev_enc_val = motor_encoder_read();
 		}
 		printf("Out of while\n");
